@@ -4,11 +4,22 @@ import type { TextItem as PdfTextItem } from 'pdfjs-dist/types/src/display/api';
 import type { DocumentStructure, PageText, Rect, TextChunk, TextItem, TextSpan } from '../../types/aura';
 import { chunkByParagraphs, parseSections } from './parseSections';
 
+function applyTransform(t1: number[], t2: number[]): number[] {
+  return [
+    t1[0] * t2[0] + t1[2] * t2[1],
+    t1[1] * t2[0] + t1[3] * t2[1],
+    t1[0] * t2[2] + t1[2] * t2[3],
+    t1[1] * t2[2] + t1[3] * t2[3],
+    t1[0] * t2[4] + t1[2] * t2[5] + t1[4],
+    t1[1] * t2[4] + t1[3] * t2[5] + t1[5],
+  ];
+}
+
 function itemRect(
   viewport: pdfjsLib.PageViewport,
   item: PdfTextItem
 ): Rect {
-  const transform = pdfjsLib.Util.transform(viewport.transform, item.transform);
+  const transform = applyTransform(viewport.transform, item.transform);
   const x = transform[4];
   const y = transform[5];
   const fontHeight = Math.hypot(transform[2], transform[3]) || 10;
